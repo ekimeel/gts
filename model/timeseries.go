@@ -1,22 +1,26 @@
-package models
+package model
 
 import (
 	"errors"
 	"fmt"
+	"github.com/ekimeel/timeseries/transformations"
 	"time"
-	"timeseries/pkg/timeseries"
-	"timeseries/pkg/writers"
 )
 
 //A MultivariateTimeSeries
 type TimeSeries struct {
 	dimensions []string
-	times []int64
-	values [][]float64
+	times      []int64
+	values     [][]float64
 }
 
 func (ts *TimeSeries) Size() int {
 	return len(ts.times)
+}
+
+//Returns the value at a time and dimension
+func (ts *TimeSeries) At(time int, i int) *float64 {
+	return &ts.values[time][i]
 }
 
 func (ts *TimeSeries) CountOfDimensions() int {
@@ -35,7 +39,6 @@ func (ts *TimeSeries) SetDimensions(dimensions []string) {
 	ts.dimensions = nil
 	ts.dimensions = dimensions
 }
-
 
 //Appends the provided dimension to the current TimeSeries
 func (ts *TimeSeries) AppendDimension(dimension string, values []float64) (int, error) {
@@ -117,7 +120,7 @@ func (ts *TimeSeries) AddTime(time time.Time, values []float64) error {
 
 // Returns the latest known time
 func (ts *TimeSeries) LatestTime() time.Time {
-	return time.Unix(ts.times[ts.Size()-1],0)
+	return time.Unix(ts.times[ts.Size()-1], 0)
 }
 
 func (ts *TimeSeries) Times() []int64 {
@@ -125,11 +128,27 @@ func (ts *TimeSeries) Times() []int64 {
 }
 
 //func (ts *TimeSeries) AddN(time int64, values []float64) error {
-func (ts *TimeSeries) Write(writer writers.Writer) error {
+func (ts *TimeSeries) Write(writer Writer) error {
 	return writer.Write(ts)
 }
 
-func (ts *TimeSeries) ComputeValue(function timeseries.ValueFunction) (float64, error) {
+func (ts *TimeSeries) ComputeValue(function ValueFunction) (float64, error) {
 	return function.Compute(ts)
 }
 
+func (ts *TimeSeries) Transform(t transformations.Transformation) (TimeSeries, error) {
+	return t.Transform(ts)
+}
+
+//Filters the current TimeSeries and returns a new one based on the result of the test
+func (ts *TimeSeries) Filter(test func(time int64, values []float64) bool) TimeSeries {
+	var filtered TimeSeries
+	filtered.SetDimensions(ts.dimensions)
+	for i, row := range ts.values {
+		time := ts.GetTimeAtNthPoint(i)
+		if test(time, row) == true {
+			filtered.Add(time, row)
+		}
+	}
+	return filtered
+}

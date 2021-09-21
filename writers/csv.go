@@ -3,32 +3,35 @@ package writers
 import (
 	"encoding/csv"
 	"fmt"
+	"github.com/ekimeel/timeseries/model"
 	"os"
 	"time"
-	"timeseries/pkg/models"
 )
 const (
-	timeStampCol = "timestamp"
+	timeStampCol      = "timestamp"
 	defaultTimeLayout = time.RFC3339
 )
 
-type Writer interface {
-	Write(series *models.TimeSeries) error
+
+/* csv */
+type CsvWriter struct {
+	Path       string
+	TimeLayout string
 }
 
-func collectHeaders(series *models.TimeSeries) []string  {
-	headers := make([]string, series.GetDimensionCount() + 1)
+func collectHeaders(series *model.TimeSeries) []string {
+	headers := make([]string, series.GetDimensionCount()+1)
 	headers[0] = timeStampCol
 	for i, dimension := range series.GetDimensions() {
-		headers[i + 1] = dimension
+		headers[i+1] = dimension
 	}
 	return headers
 }
 
-func collectValuesAt(series *models.TimeSeries, i int, timeLayout string) []string {
+func collectValuesAt(series *model.TimeSeries, i int, timeLayout string) []string {
 	epoch := series.GetTimeAtNthPoint(i)
 	measures := series.GetMeasurementVector(i)
-	values := make([]string, len(measures) + 1)
+	values := make([]string, len(measures)+1)
 	values[0] = time.Unix(epoch, 0).Format(timeLayout)
 	for j := 0; j < len(measures); j++ {
 		values[j+1] = fmt.Sprintf("%f", measures[j])
@@ -37,13 +40,7 @@ func collectValuesAt(series *models.TimeSeries, i int, timeLayout string) []stri
 	return values
 }
 
-/* csv */
-type CsvWriter struct {
-	Path string
-	TimeLayout string
-}
-
-func (csvWriter *CsvWriter) Write(series *models.TimeSeries) error {
+func (csvWriter *CsvWriter) Write(series *model.TimeSeries) error {
 	file, err := os.Create(csvWriter.Path)
 	if err != nil {
 		return fmt.Errorf("cannot write to file caused by: %s", err)
@@ -76,3 +73,4 @@ func (csvWriter *CsvWriter) Write(series *models.TimeSeries) error {
 
 	return nil
 }
+

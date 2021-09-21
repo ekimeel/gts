@@ -4,24 +4,20 @@ import (
 	"encoding/csv"
 	"errors"
 	"fmt"
+	"github.com/ekimeel/timeseries/model"
 	"io"
 	"os"
 	"strconv"
 	"time"
-	"timeseries/pkg/models"
 )
 
-type Reader interface {
-	Read() (models.TimeSeries, error)
-}
-
 type CsvReader struct {
-	Path string
+	Path       string
 	TimeLayout string
 }
 
-func (csvReader *CsvReader) Read() (models.TimeSeries, error) {
-	var ts models.TimeSeries
+func (csvReader *CsvReader) Read() (model.TimeSeries, error) {
+	var ts model.TimeSeries
 
 	file, err := os.Open(csvReader.Path)
 	if err != nil {
@@ -48,7 +44,7 @@ func (csvReader *CsvReader) Read() (models.TimeSeries, error) {
 	dimensions := header[1:(len(header))]
 	ts.SetDimensions(dimensions)
 
-	for i:= 0 ;; i = i + 1 {
+	for i := 0; ; i = i + 1 {
 		record, err := reader.Read()
 		if err == io.EOF {
 			break // reached end of the file
@@ -77,3 +73,4 @@ func (csvReader *CsvReader) Read() (models.TimeSeries, error) {
 	return ts, nil
 
 }
+
