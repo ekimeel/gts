@@ -1,6 +1,7 @@
-package timeseries
+package transformations
 
 import (
+	"github.com/ekimeel/timeseries/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
@@ -8,7 +9,7 @@ import (
 
 func TestNewPAA(t *testing.T) {
 
-	ts := TimeSeries{}
+	ts := model.TimeSeries{}
 
 	start := time.Now()
 	ts.SetDimensions([]string{"one"})

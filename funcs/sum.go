@@ -1,18 +1,15 @@
-package timeseries
+package funcs
 
 import (
 	"fmt"
+	"github.com/ekimeel/timeseries/model"
 )
 
-type ValueFunction interface {
-	Compute(series *TimeSeries) (float64, error)
-}
-
-type SumDimension struct {
+type Sum struct {
 	Dimension string
 }
 
-func (function SumDimension) Compute(series *TimeSeries) (float64, error) {
+func (function Sum) Compute(series *model.TimeSeries) (float64, error) {
 	index := series.GetDimensionIndex(function.Dimension)
 	if index < 0 {
 		return -1, fmt.Errorf("dimension not found [%s]", function.Dimension)
@@ -25,3 +22,4 @@ func (function SumDimension) Compute(series *TimeSeries) (float64, error) {
 
 	return sum, nil
 }
+

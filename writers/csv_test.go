@@ -1,6 +1,9 @@
-package timeseries
+package writers
 
 import (
+	funcs2 "github.com/ekimeel/timeseries/funcs"
+	"github.com/ekimeel/timeseries/model"
+	"github.com/ekimeel/timeseries/readers"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
@@ -10,7 +13,7 @@ import (
 const filePath = "../../testdata/TestCsvWriter.csv"
 
 func TestCsvWriter_Write(t *testing.T) {
-	ts := TimeSeries{}
+	ts := model.TimeSeries{}
 
 	start := time.Now()
 	ts.SetDimensions([]string{"one", "two", "three"})
@@ -23,12 +26,12 @@ func TestCsvWriter_Write(t *testing.T) {
 
 	ts.Write(&CsvWriter{Path: filePath})
 
-	reader := CsvReader{Path: filePath}
+	reader := readers.CsvReader{Path: filePath}
 	read, err := reader.Read()
 	assert.Nil(t, err)
 	assert.Equal(t, 5, read.Size())
 
-	twoSum, err := ts.ComputeValue(SumDimension{Dimension: "two"})
+	twoSum, err := ts.ComputeValue(funcs2.Sum{Dimension: "two"})
 	assert.Nil(t, err)
 	assert.Equal(t, float64(11), twoSum)
 

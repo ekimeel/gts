@@ -1,17 +1,22 @@
-package timeseries
+package transformations
 
 import (
 	"errors"
+	"github.com/ekimeel/timeseries/model"
 	"math"
 )
+
+type Transformation interface {
+	Transform(series *model.TimeSeries) (model.TimeSeries, error)
+}
 
 //Piecewise Aggregate Approximation (PAA)
 type PAA struct {
 	ShrinkSize int
 }
 
-func (t PAA) Transform(series *TimeSeries) (TimeSeries, error) {
-	var paa TimeSeries
+func (t PAA) Transform(series *model.TimeSeries) (model.TimeSeries, error) {
+	var paa model.TimeSeries
 
 	if t.ShrinkSize <= series.Size() {
 		return paa, errors.New("cannot preform a Piecewise Aggregate Approximation (PAA) to a size larger than " +

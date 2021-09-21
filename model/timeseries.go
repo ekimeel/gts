@@ -1,8 +1,9 @@
-package timeseries
+package model
 
 import (
 	"errors"
 	"fmt"
+	"github.com/ekimeel/timeseries/transformations"
 	"time"
 )
 
@@ -135,6 +136,19 @@ func (ts *TimeSeries) ComputeValue(function ValueFunction) (float64, error) {
 	return function.Compute(ts)
 }
 
-func (ts *TimeSeries) Transform(t TimeSeriesTransformation) (TimeSeries, error) {
+func (ts *TimeSeries) Transform(t transformations.Transformation) (TimeSeries, error) {
 	return t.Transform(ts)
+}
+
+//Filters the current TimeSeries and returns a new one based on the result of the test
+func (ts *TimeSeries) Filter(test func(time int64, values []float64) bool) TimeSeries {
+	var filtered TimeSeries
+	filtered.SetDimensions(ts.dimensions)
+	for i, row := range ts.values {
+		time := ts.GetTimeAtNthPoint(i)
+		if test(time, row) == true {
+			filtered.Add(time, row)
+		}
+	}
+	return filtered
 }

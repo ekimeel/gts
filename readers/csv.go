@@ -1,26 +1,23 @@
-package timeseries
+package readers
 
 import (
 	"encoding/csv"
 	"errors"
 	"fmt"
+	"github.com/ekimeel/timeseries/model"
 	"io"
 	"os"
 	"strconv"
 	"time"
 )
 
-type Reader interface {
-	Read() (TimeSeries, error)
-}
-
 type CsvReader struct {
 	Path       string
 	TimeLayout string
 }
 
-func (csvReader *CsvReader) Read() (TimeSeries, error) {
-	var ts TimeSeries
+func (csvReader *CsvReader) Read() (model.TimeSeries, error) {
+	var ts model.TimeSeries
 
 	file, err := os.Open(csvReader.Path)
 	if err != nil {
@@ -76,3 +73,4 @@ func (csvReader *CsvReader) Read() (TimeSeries, error) {
 	return ts, nil
 
 }
+
