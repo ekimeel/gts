@@ -21,5 +21,4 @@ func TestSum_Compute(t *testing.T) {
 	sum, err := ts.ComputeValue(Sum{Dimension: "two"})
 	assert.Nil(t, err)
 	assert.Equal(t, 11.0, sum)
-
 }

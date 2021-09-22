@@ -19,29 +19,14 @@ type CsvWriter struct {
 	TimeLayout string
 }
 
-func collectHeaders(series *model.TimeSeries) []string {
-	headers := make([]string, series.GetDimensionCount()+1)
-	headers[0] = timeStampCol
-	for i, dimension := range series.GetDimensions() {
-		headers[i+1] = dimension
-	}
-	return headers
-}
-
-func collectValuesAt(series *model.TimeSeries, i int, timeLayout string) []string {
-	epoch := series.GetTimeAtNthPoint(i)
-	measures := series.GetMeasurementVector(i)
-	values := make([]string, len(measures)+1)
-	values[0] = time.Unix(epoch, 0).Format(timeLayout)
-	for j := 0; j < len(measures); j++ {
-		values[j+1] = fmt.Sprintf("%f", measures[j])
+//Writes the provided TimeSeries to a CSV formatted file at the provided path
+func (csvWriter *CsvWriter) WriteToPath(series *model.TimeSeries, path string) error {
+	err := ensureDir(path)
+	if err != nil {
+		return err
 	}
 
-	return values
-}
-
-func (csvWriter *CsvWriter) Write(series *model.TimeSeries) error {
-	file, err := os.Create(csvWriter.Path)
+	file, err := os.Create(path)
 	if err != nil {
 		return fmt.Errorf("cannot write to file caused by: %s", err)
 	}
@@ -72,5 +57,10 @@ func (csvWriter *CsvWriter) Write(series *model.TimeSeries) error {
 	}
 
 	return nil
+}
+
+//Writes a new CSV file to the current writer's path
+func (csvWriter *CsvWriter) Write(series *model.TimeSeries) error {
+	return csvWriter.WriteToPath(series, csvWriter.Path)
 }
 
