@@ -6,9 +6,6 @@ import (
 	"math"
 )
 
-type Transformation interface {
-	Transform(series *model.TimeSeries) (model.TimeSeries, error)
-}
 
 //Piecewise Aggregate Approximation (PAA)
 type PAA struct {
