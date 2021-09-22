@@ -3,7 +3,6 @@ package model
 import (
 	"errors"
 	"fmt"
-	"github.com/ekimeel/timeseries/transformations"
 	"time"
 )
 
@@ -18,9 +17,9 @@ func (ts *TimeSeries) Size() int {
 	return len(ts.times)
 }
 
-//Returns the value at a time and dimension
-func (ts *TimeSeries) At(time int, i int) *float64 {
-	return &ts.values[time][i]
+//Gets a specific value at a time index and dimension
+func (ts *TimeSeries) At(time int, dimension int) *float64 {
+	return &ts.values[time][dimension]
 }
 
 func (ts *TimeSeries) CountOfDimensions() int {
@@ -136,7 +135,7 @@ func (ts *TimeSeries) ComputeValue(function ValueFunction) (float64, error) {
 	return function.Compute(ts)
 }
 
-func (ts *TimeSeries) Transform(t transformations.Transformation) (TimeSeries, error) {
+func (ts *TimeSeries) Transform(t Transformation) (TimeSeries, error) {
 	return t.Transform(ts)
 }
 
