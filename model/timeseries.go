@@ -126,13 +126,12 @@ func (ts *TimeSeries) Times() []int64 {
 	return ts.times
 }
 
-//func (ts *TimeSeries) AddN(time int64, values []float64) error {
 func (ts *TimeSeries) Write(writer Writer) error {
 	return writer.Write(ts)
 }
 
-func (ts *TimeSeries) ComputeValue(function ValueFunction) (float64, error) {
-	return function.Compute(ts)
+func (ts *TimeSeries) Eval(function ValueFunction) (float64, error) {
+	return function.Eval(ts)
 }
 
 func (ts *TimeSeries) Transform(t Transformation) (TimeSeries, error) {

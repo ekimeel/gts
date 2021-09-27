@@ -9,7 +9,7 @@ type Sum struct {
 	Dimension string
 }
 
-func (function Sum) Compute(series *model.TimeSeries) (float64, error) {
+func (function Sum) Eval(series *model.TimeSeries) (float64, error) {
 	index := series.GetDimensionIndex(function.Dimension)
 	if index < 0 {
 		return -1, fmt.Errorf("dimension not found [%s]", function.Dimension)
