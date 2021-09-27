@@ -31,7 +31,7 @@ func TestCsvWriter_Write(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 5, read.Size())
 
-	twoSum, err := ts.ComputeValue(funcs2.Sum{Dimension: "two"})
+	twoSum, err := ts.Eval(funcs2.Sum{Dimension: "two"})
 	assert.Nil(t, err)
 	assert.Equal(t, float64(11), twoSum)
 
