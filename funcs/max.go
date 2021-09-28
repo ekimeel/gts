@@ -14,11 +14,11 @@ type Max struct {
 func (function Max) Eval(series *model.TimeSeries) (float64, error) {
 	index := series.GetDimensionIndex(function.Dimension)
 	if index < 0 {
-		return -1, fmt.Errorf("dimension not found [%s]", function.Dimension)
+		return math.NaN(), fmt.Errorf("dimension not found [%s]", function.Dimension)
 	}
 
 	if series.Size() == 0 {
-		return 0, nil
+		return math.NaN(), nil
 	}
 
 	max := math.SmallestNonzeroFloat64

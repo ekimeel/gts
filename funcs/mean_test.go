@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"math"
 	"testing"
+	"time"
 )
 
 func TestMean_Eval(t *testing.T) {
@@ -27,4 +28,15 @@ func TestMean_Eval_WithEmptyTimeSeries(t *testing.T) {
 
 	assert.Nil(t, err)
 	assert.True(t, math.IsNaN(mean))
+}
+
+func TestMean_Eval_WithDimensionThatDoestExist(t *testing.T) {
+	ts := model.TimeSeries{}
+	ts.SetDimensions([]string{"v0"})
+	ts.Add(time.Now().Unix(), []float64{1.0})
+
+	max, err := ts.Eval(Mean{Dimension: "v1" })
+
+	assert.NotNil(t, err)
+	assert.True(t, math.IsNaN(max))
 }
