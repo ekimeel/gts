@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func TestNewPAA(t *testing.T) {
+func TestRollUp_Transform(t *testing.T) {
 
 	ts := model.TimeSeries{}
 
@@ -19,7 +19,7 @@ func TestNewPAA(t *testing.T) {
 	ts.Add(start.Add(3*time.Minute).Unix(), []float64{3.0})
 	ts.Add(start.Add(4*time.Minute).Unix(), []float64{4.0})
 
-	nts, err := ts.Transform(PAA{ShrinkSize: 2})
+	nts, err := ts.Transform(RollUp{ShrinkSize: 2})
 
 	assert.Nil(t, err)
 	assert.Equal(t, 2, nts.Size())

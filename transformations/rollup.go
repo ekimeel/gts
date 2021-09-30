@@ -6,17 +6,16 @@ import (
 	"math"
 )
 
-
-//Piecewise Aggregate Approximation (PAA)
-type PAA struct {
+//Piecewise Aggregate Approximation (RollUp)
+type RollUp struct {
 	ShrinkSize int
 }
 
-func (t PAA) Transform(series *model.TimeSeries) (model.TimeSeries, error) {
+func (t RollUp) Transform(series *model.TimeSeries) (model.TimeSeries, error) {
 	var paa model.TimeSeries
 
 	if t.ShrinkSize <= series.Size() {
-		return paa, errors.New("cannot preform a Piecewise Aggregate Approximation (PAA) to a size larger than " +
+		return paa, errors.New("cannot preform a Piecewise Aggregate Approximation (RollUp) to a size larger than " +
 			"the source time series")
 	}
 
