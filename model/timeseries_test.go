@@ -91,3 +91,46 @@ func TestTimeSeries_Filter(t *testing.T) {
 	*v3d1 = 100
 	assert.Equal(t, 100.0, *filtered.At(0,1))
 }
+
+
+func TestTimeSeries_LastTime(t *testing.T) {
+	reader := CsvReader{Path: "../testdata/3x1000.csv"}
+	ts, err := reader.Read()
+	assert.Nil(t, err)
+
+	latest := ts.LastTime()
+	assert.Equal(t, int64(1609537200), latest.Unix())
+}
+
+func TestTimeSeries_Last(t *testing.T) {
+	reader := CsvReader{Path: "../testdata/3x1000.csv"}
+	ts, err := reader.Read()
+	assert.Nil(t, err)
+
+	values := ts.Last()
+	assert.Equal(t, 3, len(*values))
+	assert.Equal(t, 1.999000, (*values)[0])
+	assert.Equal(t, 2.999000, (*values)[1])
+	assert.Equal(t, 3.999000, (*values)[2])
+}
+
+func TestTimeSeries_FirstTime(t *testing.T) {
+	reader := CsvReader{Path: "../testdata/3x1000.csv"}
+	ts, err := reader.Read()
+	assert.Nil(t, err)
+
+	latest := ts.FirstTime()
+	assert.Equal(t, int64(1609477260), latest.Unix())
+}
+
+func TestTimeSeries_First(t *testing.T) {
+	reader := CsvReader{Path: "../testdata/3x1000.csv"}
+	ts, err := reader.Read()
+	assert.Nil(t, err)
+
+	values := ts.First()
+	assert.Equal(t, 3, len(*values))
+	assert.Equal(t, 1.000000, (*values)[0])
+	assert.Equal(t, 2.000000, (*values)[1])
+	assert.Equal(t, 3.000000, (*values)[2])
+}

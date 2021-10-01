@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+
 //A MultivariateTimeSeries
 type TimeSeries struct {
 	dimensions []string
@@ -117,10 +118,22 @@ func (ts *TimeSeries) AddTime(time time.Time, values []float64) error {
 	return ts.Add(time.Unix(), values)
 }
 
-// Returns the latest known time
-func (ts *TimeSeries) LatestTime() time.Time {
+func (ts *TimeSeries) Last() *[]float64 {
+	return &ts.values[ts.Size()-1]
+}
+
+func (ts *TimeSeries) LastTime() time.Time {
 	return time.Unix(ts.times[ts.Size()-1], 0)
 }
+
+func (ts *TimeSeries) First() *[]float64 {
+	return &ts.values[0]
+}
+
+func (ts *TimeSeries) FirstTime() time.Time {
+	return time.Unix(ts.times[0], 0)
+}
+
 
 func (ts *TimeSeries) Times() []int64 {
 	return ts.times
@@ -137,6 +150,7 @@ func (ts *TimeSeries) Eval(function ValueFunction) (float64, error) {
 func (ts *TimeSeries) Transform(t Transformation) (TimeSeries, error) {
 	return t.Transform(ts)
 }
+
 
 //Filters the current TimeSeries and returns a new one based on the result of the test
 func (ts *TimeSeries) Filter(test func(time int64, values []float64) bool) TimeSeries {

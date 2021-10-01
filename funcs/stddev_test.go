@@ -2,14 +2,13 @@ package funcs
 
 import (
 	"github.com/ekimeel/timeseries/model"
-	"github.com/ekimeel/timeseries/readers"
 	"github.com/stretchr/testify/assert"
 	"math"
 	"testing"
 )
 
 func TestStdDev_Eval(t *testing.T) {
-	reader := readers.CsvReader{Path: "../testdata/1x100.csv"}
+	reader := model.CsvReader{Path: "../testdata/1x100.csv"}
 	ts, err := reader.Read()
 	assert.Nil(t, err)
 
