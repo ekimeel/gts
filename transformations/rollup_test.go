@@ -4,16 +4,20 @@ import (
 	"github.com/ekimeel/timeseries/model"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 func TestRollUp_Transform(t *testing.T) {
 
-	reader := model.CsvReader{Path: "../testdata/1x1000.csv"}
-	ts, err := reader.Read()
+	ts := model.TimeSeries{}
 
+	start := time.Now()
+	ts.SetDimensions([]string{"one"})
 
-	//ts.RollUp(15*time.Minute, &funcs.Mean{Dimension: "v0"})
-
+	ts.Add(start.Add(1*time.Minute).Unix(), []float64{1.0})
+	ts.Add(start.Add(2*time.Minute).Unix(), []float64{2.0})
+	ts.Add(start.Add(3*time.Minute).Unix(), []float64{3.0})
+	ts.Add(start.Add(4*time.Minute).Unix(), []float64{4.0})
 
 	nts, err := ts.Transform(RollUp{ShrinkSize: 2})
 
