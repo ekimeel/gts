@@ -14,7 +14,7 @@ type RollUp struct {
 func (t RollUp) Transform(series *model.TimeSeries) (model.TimeSeries, error) {
 	var paa model.TimeSeries
 
-	if t.ShrinkSize <= series.Size() {
+	if t.ShrinkSize >= series.Size() {
 		return paa, errors.New("cannot preform a Piecewise Aggregate Approximation (RollUp) to a size larger than " +
 			"the source time series")
 	}
