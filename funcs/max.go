@@ -11,7 +11,7 @@ type Max struct {
 	Dimension string
 }
 
-func (function Max) Eval(series *model.TimeSeries) (float64, error) {
+func (function Max) EvalTimeSeries(series *model.TimeSeries) (float64, error) {
 	index := series.GetDimensionIndex(function.Dimension)
 	if index < 0 {
 		return math.NaN(), fmt.Errorf("dimension not found [%s]", function.Dimension)
@@ -26,6 +26,19 @@ func (function Max) Eval(series *model.TimeSeries) (float64, error) {
 		max = math.Max(max, *series.At(i, index))
 	}
 
+	return max, nil
+}
+
+//EvalSlice returns the maximum value in the provided slice. If the slice is empty a NaN will be returned.
+func (function Max) Eval(values []float64) (float64, error) {
+	if len(values) == 0 {
+		return math.NaN(), nil
+	}
+
+	max := math.SmallestNonzeroFloat64
+	for i := 0; i < len(values); i++ {
+		max = math.Max(max, values[i])
+	}
 	return max, nil
 }
 

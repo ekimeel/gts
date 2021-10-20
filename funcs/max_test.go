@@ -13,7 +13,7 @@ func TestMax_Eval(t *testing.T) {
 	ts, err := reader.Read()
 	assert.Nil(t, err)
 
-	max, err := ts.Eval(Max{Dimension: "v0" })
+	max, err := ts.Eval( Max{ Dimension: "v0" } )
 
 	assert.Nil(t, err)
 	assert.Equal(t, 1.99, max)
