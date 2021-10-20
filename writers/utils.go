@@ -18,7 +18,7 @@ func collectHeaders(series *model.TimeSeries) []string {
 }
 
 func collectValuesAt(series *model.TimeSeries, i int, timeLayout string) []string {
-	epoch := series.GetTimeAtNthPoint(i)
+	epoch := series.GetTimeAt(i)
 	measures := series.GetMeasurementVector(i)
 	values := make([]string, len(measures)+1)
 	values[0] = time.Unix(epoch, 0).Format(timeLayout)

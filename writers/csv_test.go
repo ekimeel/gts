@@ -3,7 +3,6 @@ package writers
 import (
 	funcs2 "github.com/ekimeel/timeseries/funcs"
 	"github.com/ekimeel/timeseries/model"
-	"github.com/ekimeel/timeseries/readers"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
@@ -12,7 +11,7 @@ import (
 
 const filePath = "../../testdata/TestCsvWriter.csv"
 
-func TestCsvWriter_Write(t *testing.T) {
+func TestCsvWriter_Write_ToFile(t *testing.T) {
 	ts := model.TimeSeries{}
 
 	start := time.Now()
@@ -24,9 +23,12 @@ func TestCsvWriter_Write(t *testing.T) {
 	ts.Add(start.Add(4*time.Minute).Unix(), []float64{1.3, 2.3, 3.3})
 	ts.Add(start.Add(5*time.Minute).Unix(), []float64{1.4, 2.4, 3.4})
 
-	ts.Write(&CsvWriter{Path: filePath})
+	file, err := os.Create(filePath)
+	assert.Nil(t, err)
 
-	reader := readers.CsvReader{Path: filePath}
+	ts.Write(&CsvWriter{Writer: file})
+
+	reader := model.CsvReader{Path: filePath}
 	read, err := reader.Read()
 	assert.Nil(t, err)
 	assert.Equal(t, 5, read.Size())

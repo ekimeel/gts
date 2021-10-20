@@ -1,10 +1,9 @@
-package readers
+package model
 
 import (
 	"encoding/csv"
 	"errors"
 	"fmt"
-	"github.com/ekimeel/timeseries/model"
 	"io"
 	"os"
 	"strconv"
@@ -16,8 +15,8 @@ type CsvReader struct {
 	TimeLayout string
 }
 
-func (csvReader *CsvReader) Read() (model.TimeSeries, error) {
-	var ts model.TimeSeries
+func (csvReader *CsvReader) Read() (TimeSeries, error) {
+	var ts TimeSeries
 
 	file, err := os.Open(csvReader.Path)
 	if err != nil {
@@ -37,9 +36,16 @@ func (csvReader *CsvReader) Read() (model.TimeSeries, error) {
 		return ts, errors.New("invalid csv format: csv must have at least 2 columns and no more than 99")
 	}
 
+	if len(csvReader.TimeLayout) == 0 {
+		csvReader.TimeLayout = DefaultTimeLayout
+	}
+
+	/*
 	if header[0] != "timestamp" {
 		return ts, errors.New("invalid csv format: `timestamp` must be first column")
 	}
+
+	 */
 
 	dimensions := header[1:(len(header))]
 	ts.SetDimensions(dimensions)
@@ -52,9 +58,10 @@ func (csvReader *CsvReader) Read() (model.TimeSeries, error) {
 			return ts, fmt.Errorf("error during csv reading at row [%d] caused by: %s", i, err)
 		}
 
-		time, err := time.Parse(time.RFC3339, record[0])
+		time, err := time.Parse(csvReader.TimeLayout, record[0])
 		if err != nil {
-			return ts, fmt.Errorf("invalid timestamp format at row [%d] caused by: not RFC3339 format", i)
+			return ts, fmt.Errorf("invalid timestamp format at row [%d] caused by: not [%s] format", i,
+				csvReader.TimeLayout)
 		}
 		var values = make([]float64, len(record)-1)
 		for v := 1; v < len(record); v++ {

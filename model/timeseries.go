@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+
 //A MultivariateTimeSeries
 type TimeSeries struct {
 	dimensions []string
@@ -13,20 +14,42 @@ type TimeSeries struct {
 	values     [][]float64
 }
 
+// NewTimeSeries returns a new TimeSeries with the provided dimensions
+func NewTimeSeries(dimensions... string) TimeSeries {
+	var result TimeSeries
+	result.SetDimensions(dimensions)
+	return result
+}
+
+// Size returns the number of times in the current TimeSeries
 func (ts *TimeSeries) Size() int {
 	return len(ts.times)
 }
 
+// IsEmpty returns true if the Size() is equal to zero
+func (ts *TimeSeries) IsEmpty() bool {
+	return ts.Size() == 0
+}
+
+// Clear sets values and times equal to nil effectively clearing the current TimeSeries. The Clear func does not
+// remove dimensions form the current TimeSeries. Returns true if IsEmpty
+func (ts *TimeSeries) Clear() bool {
+	ts.values = nil
+	ts.times = nil
+	return ts.IsEmpty()
+}
+
 //Gets a specific value at a time index and dimension
-func (ts *TimeSeries) At(time int, dimension int) *float64 {
-	return &ts.values[time][dimension]
+func (ts *TimeSeries) At(timeIndex int, dimension int) *float64 {
+	return &ts.values[timeIndex][dimension]
 }
 
 func (ts *TimeSeries) CountOfDimensions() int {
 	return len(ts.dimensions)
 }
 
-func (ts *TimeSeries) GetTimeAtNthPoint(n int) int64 {
+// GetTimeAt returns the time at the provided index
+func (ts *TimeSeries) GetTimeAt(n int) int64 {
 	return ts.times[n]
 }
 
@@ -97,9 +120,36 @@ func (ts *TimeSeries) GetDimension(label string) []float64 {
 	return ts.GetDimensionAt(index)
 }
 
+// AddSeries adds the provided unix time and Series to the current TimeSeries. Prior to adding the values an
+// inspection and mapping is done to ensure dimensions are in order. An error will return if any dimension in
+// the Series does not exist current TimeSeries.
+//
+// This func should not be used when both dimensions of the Series and TimeSeries are known as it introduces additional
+// overhead to compute order prior to Add.
+func (ts *TimeSeries) AddSeries(time int64, series Series) error {
+
+	if len(ts.dimensions) != len(series.GetDimensions()) {
+		return fmt.Errorf("invalid series size, expected %d dimension(s) found: %d", len(ts.dimensions),
+			len(series.GetDimensions()))
+	}
+
+	values := make([]float64, ts.GetDimensionCount())
+	for i, aDim := range series.GetDimensions() {
+		j := ts.GetDimensionIndex(aDim)
+		if i != j {
+			return fmt.Errorf("unknown or out of order dimension: %s", aDim)
+		}
+		values[j] = series.values[aDim]
+	}
+
+	return ts.Add(time, values)
+
+
+}
+
 func (ts *TimeSeries) Add(time int64, values []float64) error {
 	if len(ts.dimensions) != len(values) {
-		return errors.New(fmt.Sprintf("invalid vector size, expected %d found: %d", len(ts.dimensions), len(values)))
+		return fmt.Errorf("invalid dimension size, expected %d found: %d", len(ts.dimensions), len(values))
 	}
 
 	if ts.Size() > 0 && time <= ts.times[len(ts.times)-1] {
@@ -117,10 +167,22 @@ func (ts *TimeSeries) AddTime(time time.Time, values []float64) error {
 	return ts.Add(time.Unix(), values)
 }
 
-// Returns the latest known time
-func (ts *TimeSeries) LatestTime() time.Time {
+func (ts *TimeSeries) Last() *[]float64 {
+	return &ts.values[ts.Size()-1]
+}
+
+func (ts *TimeSeries) LastTime() time.Time {
 	return time.Unix(ts.times[ts.Size()-1], 0)
 }
+
+func (ts *TimeSeries) First() *[]float64 {
+	return &ts.values[0]
+}
+
+func (ts *TimeSeries) FirstTime() time.Time {
+	return time.Unix(ts.times[0], 0)
+}
+
 
 func (ts *TimeSeries) Times() []int64 {
 	return ts.times
@@ -131,22 +193,43 @@ func (ts *TimeSeries) Write(writer Writer) error {
 }
 
 func (ts *TimeSeries) Eval(function ValueFunction) (float64, error) {
-	return function.Eval(ts)
+	return function.EvalTimeSeries(ts)
 }
+
 
 func (ts *TimeSeries) Transform(t Transformation) (TimeSeries, error) {
 	return t.Transform(ts)
 }
 
-//Filters the current TimeSeries and returns a new one based on the result of the test
-func (ts *TimeSeries) Filter(test func(time int64, values []float64) bool) TimeSeries {
-	var filtered TimeSeries
-	filtered.SetDimensions(ts.dimensions)
+// Map preforms a provided func on each row and adds it to the provided TimeSeries
+func (ts *TimeSeries) Map(into *TimeSeries, mapper func(time int64, values []float64) []float64) error {
 	for i, row := range ts.values {
-		time := ts.GetTimeAtNthPoint(i)
-		if test(time, row) == true {
-			filtered.Add(time, row)
+		time := ts.GetTimeAt(i)
+		series := mapper(time, row)
+		err := into.Add(time, series)
+		if err != nil {
+			return err
 		}
 	}
-	return filtered
+
+	return nil
 }
+
+//Filters the current TimeSeries and returns a new one based on the result of the test
+func (ts *TimeSeries) Filter(test func(time int64, values []float64) bool) (TimeSeries, error) {
+	var filtered TimeSeries
+	filtered.SetDimensions(ts.dimensions)
+
+	for i, row := range ts.values {
+		time := ts.GetTimeAt(i)
+		if test(time, row) == true {
+			err := filtered.Add(time, row)
+			if err != nil {
+				return filtered, err
+			}
+		}
+	}
+	return filtered, nil
+}
+
+
