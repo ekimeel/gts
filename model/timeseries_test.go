@@ -81,11 +81,11 @@ func TestTimeSeries_Filter(t *testing.T) {
 
 	v3d1 := ts.At(3, 1)
 
-	filtered := ts.Filter(func(time int64, values []float64) bool {
+	filtered, err := ts.Filter(func(time int64, values []float64) bool {
 		return values[1] > 2.2
 	})
 
-
+	assert.Nil(t, err)
 	assert.Equal(t, 2, filtered.Size())
 	assert.Equal(t, 2.3, *filtered.At(0,1))
 	*v3d1 = 100
@@ -133,4 +133,51 @@ func TestTimeSeries_First(t *testing.T) {
 	assert.Equal(t, 1.000000, (*values)[0])
 	assert.Equal(t, 2.000000, (*values)[1])
 	assert.Equal(t, 3.000000, (*values)[2])
+}
+
+func TestTimeSeries_IsEmpty(t *testing.T) {
+	var ts TimeSeries
+	assert.True(t, ts.IsEmpty())
+
+	ts.SetDimensions([]string{"v0"})
+	assert.True(t, ts.IsEmpty())
+
+	ts.Add(0, []float64{0})
+	assert.False(t, ts.IsEmpty())
+
+	ts.Clear()
+	assert.True(t, ts.IsEmpty())
+}
+
+func TestTimeSeries_Clear_DoesNotRemoveDimensions(t *testing.T) {
+	var ts TimeSeries
+	ts.SetDimensions([]string{"v0"})
+	assert.Equal(t, 1, ts.CountOfDimensions())
+	ts.Clear()
+	assert.Equal(t, 1, ts.CountOfDimensions())
+}
+
+func TestTimeSeries_Map(t *testing.T) {
+	reader := CsvReader{Path: "../testdata/3x1000.csv"}
+	ts, _ := reader.Read()
+
+	result := NewTimeSeries("sum")
+
+	sumCols := func(time int64, values []float64) []float64{
+		var sum float64
+		for i :=0; i < len(values); i++ {
+			sum += values[i]
+		}
+		return []float64{sum}
+	}
+
+	err := ts.Map(&result, sumCols)
+
+	assert.Nil(t, err)
+	assert.Equal(t, ts.Size(), result.Size())
+	assert.Equal(t, 6.0, *result.At(0, 0))
+	assert.Equal(t, 1, result.GetDimensionCount())
+	assert.Equal(t, ts.FirstTime(), result.FirstTime())
+	assert.Equal(t, ts.LastTime(), result.LastTime())
+
 }

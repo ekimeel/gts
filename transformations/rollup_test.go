@@ -1,31 +1,35 @@
 package transformations
 
 import (
+	"github.com/ekimeel/timeseries/funcs"
 	"github.com/ekimeel/timeseries/model"
+	"github.com/ekimeel/timeseries/writers"
 	"github.com/stretchr/testify/assert"
+	"os"
 	"testing"
 	"time"
 )
 
-func TestRollUp_Transform(t *testing.T) {
 
-	ts := model.TimeSeries{}
+func TestRollUp_Transform_WithMax(t *testing.T) {
+	reader := model.CsvReader{Path: "../testdata/1x100.csv"}
+	ts, _ := reader.Read()
 
-	start := time.Now()
-	ts.SetDimensions([]string{"one"})
+	rollup, err := ts.Transform(&RollUp{ Duration: 15*time.Minute, Agg: funcs.Max{} })
 
-	ts.Add(start.Add(1*time.Minute).Unix(), []float64{1.0})
-	ts.Add(start.Add(2*time.Minute).Unix(), []float64{2.0})
-	ts.Add(start.Add(3*time.Minute).Unix(), []float64{3.0})
-	ts.Add(start.Add(4*time.Minute).Unix(), []float64{4.0})
-	assert.Equal(t, 4, ts.Size())
 
-	nts, err := ts.Transform(RollUp{ShrinkSize: 2})
+
+	writer := writers.CsvWriter{Writer: os.Stdout}
+	writer.Write(&rollup)
 
 	assert.Nil(t, err)
-	assert.Equal(t, 2, nts.Size())
-	assert.Equal(t, 4, ts.Size())
-	assert.Equal(t, 1.5, nts.GetDimensionAt(0)[0])
-	assert.Equal(t, 3.5, nts.GetDimensionAt(0)[1])
-
+	assert.Equal(t, 100, ts.Size())
+	assert.Equal(t, 7, rollup.Size())
+	assert.Equal(t, 1.9, *rollup.At(0,0))
+	assert.Equal(t, 1.28, *rollup.At(1,0))
+	assert.Equal(t, 1.43, *rollup.At(2,0))
+	assert.Equal(t, 1.58, *rollup.At(3,0))
+	assert.Equal(t, 1.73, *rollup.At(4,0))
+	assert.Equal(t, 1.88, *rollup.At(5,0))
+	assert.Equal(t, 1.99, *rollup.At(6,0))
 }

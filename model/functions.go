@@ -1,5 +1,6 @@
 package model
 
 type ValueFunction interface {
-	Eval(series *TimeSeries) (float64, error)
+	EvalTimeSeries(series *TimeSeries) (float64, error)
+	Eval(values []float64) (float64, error)
 }

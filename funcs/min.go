@@ -11,7 +11,7 @@ type Min struct {
 	Dimension string
 }
 
-func (function Min) Eval(series *model.TimeSeries) (float64, error) {
+func (function Min) EvalTimeSeries(series *model.TimeSeries) (float64, error) {
 	index := series.GetDimensionIndex(function.Dimension)
 	if index < 0 {
 		return math.NaN(), fmt.Errorf("dimension not found [%s]", function.Dimension)
@@ -24,6 +24,19 @@ func (function Min) Eval(series *model.TimeSeries) (float64, error) {
 	min := math.MaxFloat64
 	for i := 0; i < series.Size(); i++ {
 		min = math.Min(min, *series.At(i, index))
+	}
+
+	return min, nil
+}
+
+func (function Min) Eval(values []float64) (float64, error) {
+	if len(values) == 0 {
+		return math.NaN(), nil
+	}
+
+	min := math.MaxFloat64
+	for i := 0; i < len(values); i++ {
+		min = math.Min(min, values[i])
 	}
 
 	return min, nil
